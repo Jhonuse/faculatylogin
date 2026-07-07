@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Faculty Attendance Management System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+  }
+
+  /* ---------- LOGIN ---------- */
+  .login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    background: #fff;
+    padding: 40px 35px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.6s ease;
+  }
+  .login-card h1 {
+    text-align: center;
+    color: #667eea;
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+  }
+  .login-card p.sub {
+    text-align: center;
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+  }
+  .login-card label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #444;
+  }
+  .login-card input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: 0.3s;
+    margin-bottom: 18px;
+  }
+  .login-card input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+  }
+  .btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
+  .error { color: #e74c3c; text-align: center; margin-top: 10px; font-size: 0.9rem; }
+  .hint {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  /* ---------- APP LAYOUT ---------- */
+  .app { display: none; min-height: 100vh; }
+  .app.active { display: flex; }
+  .sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #2c3e50, #1a252f);
+    color: #fff;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    transition: 0.3s;
+    z-index: 100;
+  }
+  .sidebar .logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+  }
+  .sidebar .logo h2 { font-size: 1.2rem; color: #fff; }
+  .sidebar .logo small { color: #aaa; font-size: 0.75rem; }
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    color: #ddd;
+    text-decoration: none;
+    transition: 0.3s;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+  }
+  .sidebar nav a:hover, .sidebar nav a.active {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    border-left-color: #667eea;
+  }
+  .sidebar nav a .icon { font-size: 1.1rem; }
+
+  .main {
+    margin-left: 250px;
+    padding: 30px;
+    flex: 1;
+    min-height: 100vh;
+    background: #f4f6fb;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  .topbar h2 { color: #2c3e50; font-size: 1.3rem; }
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #2c3e50;
+  }
+
+  /* ---------- PAGES ---------- */
+  .page { display: none; animation: fadeIn 0.4s ease; }
+  .page.active { display: block; }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    transition: 0.3s;
+  }
+  .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+  .card h3 { color: #2c3e50; margin-bottom: 15px; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .info-box {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  .info-box.alt1 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .info-box.alt2 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .info-box.alt3 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+  .info-box .label { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+  .info-box .value { font-size: 1.3rem; font-weight: 700; margin-top: 5px; }
+
+  /* ---------- TIMETABLE ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  th { background: #f8f9fc; color: #555; font-weight: 600; }
+  tr.current-row {
+    background: linear-gradient(90deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15));
+    font-weight: 600;
+  }
+  tr.current-row td:first-child::before {
+    content: "▶ ";
+    color: #667eea;
+  }
+
+  .current-class-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .current-class-banner .info h3 { font-size: 1.4rem; margin-bottom: 5px; }
+  .current-class-banner .info p { opacity: 0.9; }
+  .btn-mark {
+    padding: 12px 25px;
+    background: #fff;
+    color: #667eea;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn-mark:hover { transform: scale(1.05); }
+
+  .no-class {
+    text-align: center;
+    padding: 40px;
+    color: #777;
+  }
+
+  /* ---------- ATTENDANCE ---------- */
+  .attendance-code {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  .attendance-code span { color: #e67e22; font-size: 1.1rem; }
+
+  .select-all-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fc;
+    border-radius: 8px;
+  }
+  .select-all-row label { cursor: pointer; font-weight: 600; color: #555; }
+
+  .attendance-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
+  }
+
+  .btn-save {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+  }
+
+  /* ---------- SEARCH ---------- */
+  .search-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .search-bar input, .search-bar select {
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+  .search-bar input:focus, .search-bar select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .record-card {
+    background: #fff;
+    border-left: 4px solid #667eea;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: 0.3s;
+  }
+  .record-card:hover { transform: translateX(5px); }
+  .record-card h4 { color: #2c3e50; margin-bottom: 6px; }
+  .record-card p { color: #666; font-size: 0.9rem; margin: 3px 0; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 5px;
+  }
+  .badge.present { background: #d4edda; color: #155724; }
+  .badge.absent { background: #f8d7da; color: #721c24; }
+  .badge.code { background: #fff3cd; color: #856404; }
+
+  /* ---------- ANIMATIONS ---------- */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 15px; }
+    .menu-toggle { display: block; }
+    .topbar h2 { font-size: 1.1rem; }
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .overlay.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginPage" class="login-wrapper">
+  <div class="login-card">
+    <h1>🎓 Faculty Portal</h1>
+    <p class="sub">Attendance Management System</p>
+    <form id="loginForm">
+  <label for="teacherId">Teacher ID</label>
+  <input type="text" id="teacherId" placeholder="e.g. T001" required />
+  
+  <label for="passcode">Passcode</label>
+<div style="position:relative;">
+  <input type="password" id="passcode" placeholder="Enter passcode" required style="width:100%;padding-right:40px;" />
+  <button type="button" id="togglePass" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.2rem;">👁️</button>
+</div>
+  <button type="submit" class="btn">Login</button>
+  <p id="loginError" class="error"></p>
+</form>
+<p class="hint">Demo: T001/1234, T002/5678, T003/9012</p>
+    <p class="hint">Demo IDs: T001, T002, T003</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="app">
+  <div id="overlay" class="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <h2>📚 Faculty AMS</h2>
+      <small>Attendance System</small>
+    </div>
+    <nav>
+      <a data-page="dashboard" class="active"><span class="icon">🏠</span> Dashboard</a>
+      <a data-page="classes"><span class="icon">📅</span> My Classes</a>
+      <a data-page="mark"><span class="icon">✅</span> Mark Attendance</a>
+      <a data-page="history"><span class="icon">📂</span> Attendance History</a>
+      <a id="logoutBtn"><span class="icon">🚪</span> Logout</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <h2 id="pageTitle">Dashboard</h2>
+      <div id="topbarUser" style="font-size:0.9rem;color:#555;"></div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page active">
+      <div class="info-grid">
+        <div class="info-box"><div class="label">Teacher Name</div><div class="value" id="dName">-</div></div>
+        <div class="info-box alt1"><div class="label">Teacher ID</div><div class="value" id="dId">-</div></div>
+        <div class="info-box alt2"><div class="label">Date</div><div class="value" id="dDate">-</div></div>
+        <div class="info-box alt3"><div class="label">Time</div><div class="value" id="dTime">-</div></div>
+      </div>
+
+      <div class="card">
+        <h3>📍 Current Class</h3>
+        <div id="currentClassBox"></div>
+      </div>
+
+      <div class="card">
+        <h3>📅 Today's Timetable</h3>
+        <div style="overflow-x:auto;">
+          <table id="timetable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY CLASSES -->
+    <section id="page-classes" class="page">
+      <div class="card">
+        <h3>📅 Full Weekly Timetable</h3>
+        <div style="overflow-x:auto;">
+          <table id="fullTimetable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARK ATTENDANCE -->
+    <section id="page-mark" class="page">
+      <div class="card">
+        <h3>✅ Mark Attendance</h3>
+        <div id="markContent">
+          <p style="color:#777;">Please select a class from the Dashboard or choose below:</p>
+          <select id="classSelect" style="padding:10px;border-radius:8px;border:2px solid #e0e0e0;margin-top:10px;width:100%;max-width:400px;">
+            <option value="">-- Select Class --</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+   <!-- HISTORY -->
+    <!-- Add this inside the History page card, above the search bar -->
+<button class="btn" style="width:auto;padding:10px 20px;background:#e74c3c;margin-bottom:15px;" onclick="debugRecords()">
+  🔍 Debug: Show All Records
+</button>
+<section id="page-history" class="page">
+  <div class="card">
+    <h3>📂 Attendance History</h3>
+    
+    <!-- NEW: Management Buttons -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn" style="width:auto;padding:10px 20px;background:linear-gradient(135deg,#4facfe,#00f2fe);" onclick="exportToCSV()">📥 Export to CSV</button>
+      <button class="btn" style="width:auto;padding:10px 20px;background:linear-gradient(135deg,#f093fb,#f5576c);" onclick="viewRawData()">🔍 View Raw Data</button>
+      <button class="btn" style="width:auto;padding:10px 20px;background:linear-gradient(135deg,#eb3349,#f45c43);" onclick="clearAllRecords()">🗑️ Clear All Records</button>
+    </div>
+    
+    <div class="search-bar">
+      <input type="date" id="searchDate" />
+      <select id="searchClass">
+        <option value="">All Classes</option>
+      </select>
+      <select id="searchSubject">
+        <option value="">All Subjects</option>
+      </select>
+    </div>
+    <div id="historyList"></div>
+  </div>
+</section>
+<script>
+/* ============ DATA ============ */
+const teachers = [
+  { id: "T001", name: "DR.S.MALATHI",   department: "Computer Science", password: "T001" },
+  { id: "T002", name: "DR.A.JOSHI", department: "Mathematics",      password: "T002" },
+  { id: "T003", name: "DR.T.KALAICHELVI",    department: "Physics",          password: "T003" },
+  { id: "T004", name: "DR.K.JAYASHREE",    department: "Physics",          password: "T004" },
+{ id: "T005", name: "DR.S.CHAKARAVARTHI",    department: "Physics",          password: "T005" },
+{ id: "T006", name: "DR.W.GRACYTHERESA",    department: "Physics",          password: "T006" },
+{ id: "T007", name: "DR.N.R.RAM MOHAN",    department: "Physics",          password: "T007" },
+{ id: "T008", name: "DR.N.SIVAKUMAR",    department: "Physics",          password: "T008" },
+{ id: "T009", name: "DR.C.GNANAPRAKASAM",    department: "Physics",          password: "T009" },
+{ id: "T0010", name: "DR.C. BHARANIDHARAN",    department: "Physics",          password: "T0010" },
+{ id: "T0011", name: "DR.M.SMAHARAJAN",    department: "Physics",          password: "T0011" },
+{ id: "T0012", name: "DR.E.BHUVANESWARI",    department: "Physics",          password: "T0012" },
+{ id: "T0013", name: "DR.T.VEERAMANI",    department: "Physics",          password: "T0013" },
+{ id: "T0014", name: "DR.S.LEELAVATHY",    department: "Physics",          password: "T0014" },
+{ id: "T0015", name: "MRS.S.VIMALA",    department: "Physics",          password: "T0015" },
+{ id: "T0016", name: "DR.C.VIVEK",    department: "Physics",          password: "T0016" },
+{ id: "T0017", name: "DR.T.SELVABANUPRIYA",    department: "Physics",          password: "T0017" },
+{ id: "T0018", name: "DR.V.MAHAVAISHNAVI",    department: "Physics",          password: "T0018" },
+{ id: "T0019", name: "DR.M.VIDHYASREE",    department: "Physics",          password: "T0019" },
+{ id: "T0020", name: "DR.T.DR.DS.SHAJI",    department: "Physics",          password: "T0020" },
+{ id: "T0021", name: "MR.M. SADHASIVAM",    department: "Physics",          password: "T0021" },
+{ id: "T0022", name: "MRS.T.KAVITHA",    department: "Physics",          password: "T0022" },
+{ id: "T0023", name: "DR.S.SRINIDHI",    department: "Physics",          password: "T0023" },
+{ id: "T0024", name: "DR.V.RATHINAPRIYA",    department: "Physics",          password: "T0024" },
+{ id: "T0025", name: "DR.S.RAVEENA",    department: "Physics",          password: "T0025" },
+{ id: "T0026", name: "MRS.R.PRIYA",    department: "Physics",          password: "T0026" },
+{ id: "T0027", name: "MRS.A.BABISHA",    department: "Physics",          password: "T0027" },
+{ id: "T0028", name: "MRS.C M HILDA JERLIN",    department: "Physics",          password: "T0028" },
+{ id: "T0029", name: "MRS.B.BALA ABIRAMI",    department: "Physics",          password: "T0029" },
+{ id: "T0030", name: "MR.M.VETRISELVAN",    department: "Physics",          password: "T0030" },
+{ id: "T0031", name: "MRS.R.VIDHYAMUTHULAKSHMI",    department: "Physics",          password: "T0031" },
+{ id: "T0032", name: "MRS.V REKHA",    department: "Physics",          password: "T0032" },
+{ id: "T0033", name: "MRS.S.SWATHI",    department: "Physics",          password: "T0033" },
+{ id: "T0034", name: "MRS.J.ANITHA",    department: "Physics",          password: "T0034" },
+{ id: "T0035", name: "MRS.C.GOMATHI",    department: "Physics",          password: "T0035" },
+{ id: "T0036", name: "MR.P.KALIAPPAN",    department: "Physics",          password: "T00136" },
+{ id: "T0037", name: "MRS.P.MISBA MARY BAI",    department: "Physics",          password: "T0037" },
+{ id: "T0038", name: "DR.S.SRINIDHI",    department: "Physics",          password: "" }
+
+];  
+
+const timetable = [
+  // Monday
+  { day: "Monday",    time: "09:00-10:00", class: "CS-A", subject: "Data Structures",  teacherId: "T002" },
+  { day: "Monday",    time: "10:00-11:00", class: "CS-B", subject: "Algorithms",       teacherId: "T001" },
+  { day: "Monday",    time: "11:30-12:30", class: "CS-A", subject: "DBMS",             teacherId: "T001" },
+  { day: "Monday",    time: "14:00-15:00", class: "CS-C", subject: "OS",               teacherId: "T001" },
+  // Tuesday
+  { day: "Tuesday",   time: "09:00-10:00", class: "CS-B", subject: "Data Structures",  teacherId: "T001" },
+  { day: "Tuesday",   time: "10:00-11:00", class: "CS-A", subject: "Algorithms",       teacherId: "T001" },
+  { day: "Tuesday",   time: "11:30-12:30", class: "CS-C", subject: "DBMS",             teacherId: "T001" },
+  { day: "Tuesday",   time: "14:00-15:00", class: "CS-B", subject: "OS",               teacherId: "T001" },
+  // Wednesday
+  { day: "Wednesday", time: "09:00-10:00", class: "CS-A", subject: "Data Structures",  teacherId: "T001" },
+  { day: "Wednesday", time: "10:00-11:00", class: "CS-C", subject: "Algorithms",       teacherId: "T001" },
+  // Thursday
+  { day: "Thursday",  time: "09:00-10:00", class: "CS-B", subject: "DBMS",             teacherId: "T001" },
+  { day: "Thursday",  time: "10:00-11:00", class: "CS-A", subject: "OS",               teacherId: "T001" },
+  { day: "Thursday",  time: "11:30-12:30", class: "CS-C", subject: "Data Structures",  teacherId: "T001" },
+  // Friday
+  { day: "Friday",    time: "09:00-10:00", class: "CS-A", subject: "Algorithms",       teacherId: "T001" },
+  { day: "Friday",    time: "10:00-11:00", class: "CS-B", subject: "DBMS",             teacherId: "T001" },
+  { day: "Friday",    time: "11:30-12:30", class: "CS-C", subject: "OS",               teacherId: "T001" },
+  // Saturday
+  { day: "Saturday",  time: "09:00-10:00", class: "CS-A", subject: "DBMS",             teacherId: "T001" },
+  { day: "Saturday",  time: "10:00-11:00", class: "CS-B", subject: "Algorithms",       teacherId: "T001" }
+];
+
+const students = {
+  "IV-A": [
+    { roll: "2114242430022", name: "AKSHAYA G" },
+    { roll: "2114242430045", name: "BENCY SANDRA M" },
+    { roll: "2114242430086", name: "DHONA NANCY A" },
+    { roll: "2114242430156", name: "HONEY BRITTNEY I" },
+    { roll: "2114242430176", name: "JEEVAJOTHI K" },
+    { roll: "2114242430190", name: "KANISHKA V" },
+    { roll: "2114242430219", name: "KRITHIKA S" },
+    { roll: "2114242430259", name: "MERCY.M" }
+    { roll: "2114242430287", name: "S.NABEEHA" },
+    { roll: "2114242430326", name: "PRAKIMA M" },
+    { roll: "2114242430358", name: "RENITTA J" },
+    { roll: "2114242430382", name: "SANJANA C" },
+    { roll: "2114242430436", name: "SWASTHIKA S" },
+    { roll: "2114242430449", name: "THAMIZHSELVI A S" },
+    { roll: "2114242430484", name: "VISHALI A" }
+    { roll: "2114242430504", name: "YUVATHI V" },
+    { roll: "2114242430001", name: "Qasim Khan" },
+    { roll: "2114242430018", name: "AJITH KUMAR P" },
+    { roll: "2114242430037", name: "ARUN NAGARAJ G" },
+    { roll: "2114242430052", name: "CHARISH C" },
+    { roll: "2114242430062", name: "DEEPAN M" },
+    { roll: "2114242430083", name: "DHAYANITHI J" },
+    { roll: "2114242430108", name: "GAUTHAMKUMAR U" },
+    { roll: "2114242430129", name: "HARI PREETH S K" },
+    { roll: "2114242430148", name: "HARSITH J" },
+    { roll: "2114242430183", name: "JOE PRINCE A" },
+    { roll: "2114242430294", name: "NAVEENKUMAR S" },
+    { roll: "2114242430154", name: "HEMANTHRAJAN T K" },
+    { roll: "2114242430135", name: "HARIKIRAN A" },
+    { roll: "2114242430123", name: "HAARISH RAGAVENDER " },
+    { roll: "2114242430099", name: "ESAKKI SURYA E" },
+    { roll: "2114242430070", name: "DHANUSH M" },
+    { roll: "2114242430378", name: "SAMUEL A" },
+    { roll: "2114242430346", name: "RAJANBALAJI R" },
+    { roll: "2114242430417", name: "SOMINENI SAI KRISHNA" },
+    { roll: "2114242430414", name: "SIVAMURUGAN P" },
+    { roll: "2114242430444", name: "TARUN PADMANABHAN" },
+    { roll: "2114242430483", name: "VISHAL M" },
+    { roll: "A01", name: "Aarav Singh" },
+  ]
+};
+
+/* ============ STATE ============ */
+let currentUser = null;
+let currentAttendance = null; // { class, subject, time, code }
+
+/* ============ HELPERS ============ */
+const $ = id => document.getElementById(id);
+const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'short', day:'numeric' });
+}
+function formatTime(d) {
+  return d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+function hhmm(d) {
+  return d.toTimeString().slice(0,5);
+}
+function timeToMin(t) {
+  const [h,m] = t.split(':').map(Number);
+  return h*60 + m;
+}
+function generateCode() {
+  return "ATT-" + Math.floor(1000 + Math.random()*9000);
+}
+
+/* ============ LOGIN ============ */
+$("loginForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const id = $("teacherId").value.trim().toUpperCase();
+  const pass = $("passcode").value;
+  
+  const teacher = teachers.find(t => t.id === id);
+  
+  if (!teacher) {
+    $("loginError").textContent = "❌ Invalid Teacher ID.";
+    return;
+  }
+  if (teacher.password !== pass) {
+    $("loginError").textContent = "❌ Incorrect passcode.";
+    return;
+  }
+  
+  currentUser = teacher;
+  $("loginPage").style.display = "none";
+  $("app").classList.add("active");
+  $("topbarUser").textContent = `👤 ${teacher.name}`;
+  initDashboard();
+});
+$("logoutBtn").addEventListener("click", () => {
+  currentUser = null;
+  $("app").classList.remove("active");
+  $("loginPage").style.display = "flex";
+  $("teacherId").value = "";
+  $("passcode").value = "";       // ← Add this line
+  $("loginError").textContent = "";
+});
+
+/* ============ NAVIGATION ============ */
+document.querySelectorAll(".sidebar nav a[data-page]").forEach(a => {
+  a.addEventListener("click", () => {
+    document.querySelectorAll(".sidebar nav a").forEach(x => x.classList.remove("active"));
+    a.classList.add("active");
+    const page = a.dataset.page;
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    $("page-" + page).classList.add("active");
+    $("pageTitle").textContent = a.textContent.trim();
+    if (page === "history") renderHistory();
+    if (page === "classes") renderFullTimetable();
+    if (page === "mark") populateClassSelect();
+    closeSidebar();
+  });
+});
+
+/* ============ SIDEBAR MOBILE ============ */
+$("menuToggle").addEventListener("click", () => {
+  $("sidebar").classList.toggle("open");
+  $("overlay").classList.toggle("active");
+});
+$("overlay").addEventListener("click", closeSidebar);
+function closeSidebar() {
+  $("sidebar").classList.remove("open");
+  $("overlay").classList.remove("active");
+}
+
+/* ============ DASHBOARD ============ */
+function initDashboard() {
+  $("dName").textContent = currentUser.name;
+  $("dId").textContent = currentUser.id;
+  updateClock();
+  setInterval(updateClock, 1000);
+  renderTimetable();
+}
+
+function updateClock() {
+  const now = new Date();
+  $("dDate").textContent = formatDate(now);
+  $("dTime").textContent = formatTime(now);
+  renderCurrentClass();
+}
+
+function getTodayClasses() {
+  const today = days[new Date().getDay()];
+  return timetable
+    .filter(t => t.day === today && t.teacherId === currentUser.id)
+    .sort((a,b) => timeToMin(a.time.split('-')[0]) - timeToMin(b.time.split('-')[0]));
+}
+
+function getCurrentClass() {
+  const now = new Date();
+  const nowMin = timeToMin(hhmm(now));
+  const today = days[now.getDay()];
+  return timetable.find(t => {
+    if (t.day !== today || t.teacherId !== currentUser.id) return false;
+    const [start, end] = t.time.split('-');
+    return nowMin >= timeToMin(start) && nowMin < timeToMin(end);
+  });
+}
+
+function renderTimetable() {
+  const classes = getTodayClasses();
+  const current = getCurrentClass();
+  const tbl = $("timetable");
+  if (classes.length === 0) {
+    tbl.innerHTML = `<tr><td style="text-align:center;color:#999;padding:30px;">No classes scheduled today 🎉</td></tr>`;
+    return;
+  }
+  let html = `<thead><tr><th>Time</th><th>Class</th><th>Subject</th></tr></thead><tbody>`;
+  classes.forEach(c => {
+    const isCurrent = current && c.time === current.time && c.class === current.class;
+    html += `<tr class="${isCurrent ? 'current-row' : ''}">
+      <td>${c.time}</td><td>${c.class}</td><td>${c.subject}</td></tr>`;
+  });
+  html += `</tbody>`;
+  tbl.innerHTML = html;
+}
+
+function renderCurrentClass() {
+  const c = getCurrentClass();
+  const box = $("currentClassBox");
+  if (!c) {
+    box.innerHTML = `<div class="no-class">📭 No class is currently in session.<br><small>Check your timetable for upcoming classes.</small></div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="current-class-banner">
+      <div class="info">
+        <h3>${c.class} — ${c.subject}</h3>
+        <p>🕒 ${c.time} | 📅 ${c.day}</p>
+      </div>
+      <button class="btn-mark" onclick="startAttendance('${c.class}','${c.subject}','${c.time}')">✅ Mark Attendance</button>
+    </div>`;
+}
+
+/* ============ FULL TIMETABLE ============ */
+function renderFullTimetable() {
+  const tbl = $("fullTimetable");
+  const myClasses = timetable.filter(t => t.teacherId === currentUser.id);
+  let html = `<thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Subject</th></tr></thead><tbody>`;
+  days.slice(1).forEach(day => {
+    const dayClasses = myClasses.filter(t => t.day === day);
+    if (dayClasses.length === 0) return;
+    dayClasses.forEach((c,i) => {
+      html += `<tr>${i===0?`<td rowspan="${dayClasses.length}" style="font-weight:600;vertical-align:top;">${day}</td>`:''}
+        <td>${c.time}</td><td>${c.class}</td><td>${c.subject}</td></tr>`;
+    });
+  });
+  html += `</tbody>`;
+  tbl.innerHTML = html;
+}
+
+/* ============ MARK ATTENDANCE ============ */
+function populateClassSelect() {
+  const sel = $("classSelect");
+  const classes = getTodayClasses();
+  sel.innerHTML = `<option value="">-- Select Class --</option>`;
+  classes.forEach(c => {
+    sel.innerHTML += `<option value="${c.class}|${c.subject}|${c.time}">${c.time} • ${c.class} • ${c.subject}</option>`;
+  });
+  sel.onchange = () => {
+    if (!sel.value) return;
+    const [cls, sub, tm] = sel.value.split('|');
+    startAttendance(cls, sub, tm);
+  };
+}
+
+function startAttendance(cls, subject, time) {
+  currentAttendance = { class: cls, subject, time, code: generateCode() };
+  const list = students[cls] || [];
+  const box = $("markContent");
+  let html = `
+    <div class="attendance-code">🔑 Attendance Code: <span>${currentAttendance.code}</span></div>
+    <p style="margin-bottom:10px;"><strong>Class:</strong> ${cls} &nbsp;|&nbsp; <strong>Subject:</strong> ${subject} &nbsp;|&nbsp; <strong>Time:</strong> ${time}</p>
+    <div class="select-all-row">
+      <label><input type="checkbox" id="selectAllPresent" onchange="toggleAllPresent()"> Select All Present</label>
+      <label><input type="checkbox" id="selectAllAbsent" onchange="toggleAllAbsent()"> Select All Absent</label>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="attendance-table">
+      <thead><tr><th>Roll No</th><th>Student Name</th><th>Present</th><th>Absent</th></tr></thead>
+      <tbody>`;
+  list.forEach(s => {
+    html += `<tr>
+      <td>${s.roll}</td>
+      <td>${s.name}</td>
+      <td><input type="checkbox" class="present" data-roll="${s.roll}" onchange="syncRow(this,'present')"></td>
+      <td><input type="checkbox" class="absent"  data-roll="${s.roll}" onchange="syncRow(this,'absent')"></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>
+    <button class="btn btn-save" onclick="saveAttendance()">💾 Save Attendance</button>`;
+  box.innerHTML = html;
+
+  // switch to mark page
+  document.querySelectorAll(".sidebar nav a").forEach(x => x.classList.remove("active"));
+  document.querySelector('[data-page="mark"]').classList.add("active");
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  $("page-mark").classList.add("active");
+  $("pageTitle").textContent = "Mark Attendance";
+}
+
+function syncRow(cb, type) {
+  const roll = cb.dataset.roll;
+  const other = type === "present" ? "absent" : "present";
+  const otherCb = document.querySelector(`.${other}[data-roll="${roll}"]`);
+  if (cb.checked && otherCb) otherCb.checked = false;
+}
+function toggleAllPresent() {
+  const all = $("selectAllPresent").checked;
+  document.querySelectorAll(".present").forEach(c => c.checked = all);
+  if (all) document.querySelectorAll(".absent").forEach(c => c.checked = false);
+  $("selectAllAbsent").checked = false;
+}
+function toggleAllAbsent() {
+  const all = $("selectAllAbsent").checked;
+  document.querySelectorAll(".absent").forEach(c => c.checked = all);
+  if (all) document.querySelectorAll(".present").forEach(c => c.checked = false);
+  $("selectAllPresent").checked = false;
+}
+
+function saveAttendance() {
+  if (!currentAttendance) return;
+  const present = [...document.querySelectorAll(".present:checked")].map(c => c.dataset.roll);
+  const absent  = [...document.querySelectorAll(".absent:checked")].map(c => c.dataset.roll);
+  const record = {
+    id: Date.now(),
+    teacherId: currentUser.id,
+    teacherName: currentUser.name,
+    class: currentAttendance.class,
+    subject: currentAttendance.subject,
+    time: currentAttendance.time,
+    code: currentAttendance.code,
+    date: new Date().toISOString().slice(0,10),
+    dateStr: formatDate(new Date()),
+    present, absent,
+    totalStudents: students[currentAttendance.class].length
+  };
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]");
+  all.push(record);
+  localStorage.setItem("attendance", JSON.stringify(all));
+  alert(`✅ Attendance saved!\nCode: ${record.code}\nPresent: ${present.length}/${record.totalStudents}`);
+  currentAttendance = null;
+  $("markContent").innerHTML = `<p style="color:#27ae60;font-weight:600;">✅ Attendance saved successfully.</p>`;
+}
+
+/* ============ HISTORY ============ */
+function populateSearchFilters() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]");
+  const classes = [...new Set(all.map(r => r.class))];
+  const subjects = [...new Set(all.map(r => r.subject))];
+  const clsSel = $("searchClass"), subSel = $("searchSubject");
+  clsSel.innerHTML = `<option value="">All Classes</option>` + classes.map(c => `<option>${c}</option>`).join('');
+  subSel.innerHTML = `<option value="">All Subjects</option>` + subjects.map(s => `<option>${s}</option>`).join('');
+}
+
+function renderHistory() {
+  populateSearchFilters();
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]")
+    .filter(r => r.teacherId === currentUser.id)
+    .sort((a,b) => b.id - a.id);
+  const date = $("searchDate").value;
+  const cls  = $("searchClass").value;
+  const sub  = $("searchSubject").value;
+  const filtered = all.filter(r =>
+    (!date || r.date === date) &&
+    (!cls  || r.class === cls) &&
+    (!sub  || r.subject === sub)
+  );
+  const box = $("historyList");
+  if (filtered.length === 0) {
+    box.innerHTML = `<p style="text-align:center;color:#999;padding:30px;">No records found 📭</p>`;
+    return;
+  }
+  box.innerHTML = filtered.map(r => `
+    <div class="record-card">
+      <h4>${r.class} — ${r.subject}</h4>
+      <p>📅 ${r.dateStr} &nbsp;|&nbsp; 🕒 ${r.time}</p>
+      <p><span class="badge code">${r.code}</span>
+         <span class="badge present">Present: ${r.present.length}</span>
+         <span class="badge absent">Absent: ${r.absent.length}</span>
+         <span class="badge" style="background:#e2e3e5;color:#383d41;">Total: ${r.totalStudents}</span></p>
+    </div>`).join('');
+}
+
+["searchDate","searchClass","searchSubject"].forEach(id => {
+  $(id).addEventListener("change", renderHistory);
+});
+$("togglePass").addEventListener("click", () => {
+  const input = $("passcode");
+  if (input.type === "password") {
+    input.type = "text";
+    $("togglePass").textContent = "🙈";
+  } else {
+    input.type = "password";
+    $("togglePass").textContent = "🙈";
+  }
+});
+/* ============ LOCAL STORAGE MANAGEMENT ============ */
+
+// 1. EXPORT TO CSV (Download as Excel file)
+function exportToCSV() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]")
+    .filter(r => r.teacherId === currentUser.id);
+  
+  if (all.length === 0) {
+    alert("⚠️ No records to export!");
+    return;
+  }
+  
+  // Build CSV content
+  let csv = "Date,Time,Class,Subject,Attendance Code,Total Students,Present,Absent,Student Roll Numbers (Present),Student Roll Numbers (Absent)\n";
+  
+  all.forEach(r => {
+    csv += `"${r.dateStr}","${r.time}","${r.class}","${r.subject}","${r.code}",${r.totalStudents},${r.present.length},${r.absent.length},"${r.present.join('; ')}","${r.absent.join('; ')}"\n`;
+  });
+  
+  // Create download link
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Attendance_${currentUser.id}_${new Date().toISOString().slice(0,10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  alert(`✅ Exported ${all.length} records to CSV!`);
+}
+
+// 2. VIEW RAW DATA (Show in a popup)
+function viewRawData() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]")
+    .filter(r => r.teacherId === currentUser.id);
+  
+  if (all.length === 0) {
+    alert("📭 No records stored yet!");
+    return;
+  }
+  
+  // Create a modal to display the data
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+  
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:15px;padding:25px;max-width:90%;max-height:80vh;overflow:auto;width:800px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <h3 style="color:#2c3e50;">🔍 Raw LocalStorage Data</h3>
+        <button onclick="this.closest('div').parentElement.remove()" style="background:#e74c3c;color:#fff;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1.2rem;">✕</button>
+      </div>
+      <p style="margin-bottom:10px;color:#666;"><strong>Total Records:</strong> ${all.length}</p>
+      <p style="margin-bottom:10px;color:#666;"><strong>Storage Used:</strong> ${(JSON.stringify(all).length / 1024).toFixed(2)} KB</p>
+      <pre style="background:#f4f6fb;padding:15px;border-radius:8px;overflow:auto;max-height:50vh;font-size:0.85rem;">${JSON.stringify(all, null, 2)}</pre>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+
+// 3. CLEAR ALL RECORDS
+function clearAllRecords() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]")
+    .filter(r => r.teacherId === currentUser.id);
+  
+  if (all.length === 0) {
+    alert("📭 No records to clear!");
+    return;
+  }
+  
+  if (!confirm(`⚠️ Are you sure you want to delete ALL ${all.length} attendance records?\n\nThis action CANNOT be undone!`)) {
+    return;
+  }
+  
+  // Keep records from other teachers, only delete current teacher's records
+  const others = JSON.parse(localStorage.getItem("attendance") || "[]")
+    .filter(r => r.teacherId !== currentUser.id);
+  
+  localStorage.setItem("attendance", JSON.stringify(others));
+  alert(`✅ Successfully deleted ${all.length} records!`);
+  renderHistory();
+}
+
+// 4. BONUS: Get storage statistics
+function getStorageStats() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]");
+  const myRecords = all.filter(r => r.teacherId === currentUser.id);
+  
+  return {
+    totalRecords: all.length,
+    myRecords: myRecords.length,
+    storageUsedKB: (JSON.stringify(all).length / 1024).toFixed(2),
+    maxStorageKB: 5120 // ~5MB limit for most browsers
+  };
+}
+// View all attendance records
+console.log(JSON.parse(localStorage.getItem("attendance")));
+
+// Count total records
+console.log(JSON.parse(localStorage.getItem("attendance") || "[]").length);
+
+// Clear EVERYTHING (all teachers)
+localStorage.clear();
+
+// Remove just the attendance key
+localStorage.removeItem("attendance");
+
+// Check storage size
+console.log((JSON.stringify(localStorage).length / 1024).toFixed(2) + " KB used");
+function debugRecords() {
+  const all = JSON.parse(localStorage.getItem("attendance") || "[]");
+  
+  let msg = `📊 LOCALSTORAGE DEBUG REPORT\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `Total Records: ${all.length}\n`;
+  msg += `Current User: ${currentUser.id} (${currentUser.name})\n`;
+  msg += `My Records: ${all.filter(r => r.teacherId === currentUser.id).length}\n\n`;
+  
+  if (all.length === 0) {
+    msg += `⚠️ NO RECORDS FOUND!\n`;
+    msg += `→ You need to mark attendance first.\n`;
+    msg += `→ Go to Dashboard → Mark Attendance → Save`;
+  } else {
+    msg += `📋 ALL RECORDS:\n`;
+    all.forEach((r, i) => {
+      msg += `\n[${i+1}] ${r.date} | ${r.time} | ${r.class} | ${r.subject}\n`;
+      msg += `    Teacher: ${r.teacherId} | Code: ${r.code}\n`;
+      msg += `    Present: ${r.present.length} | Absent: ${r.absent.length}`;
+    });
+  }
+  
+  alert(msg);
+}
+
+</script>
+</body>
+</html>

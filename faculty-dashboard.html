@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Dashboard | Panimalar Engineering College</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="dash">
+  <aside class="dash__sidebar">
+    <div class="dash__brand">
+      <span class="brand__crest" aria-hidden="true"><img src=" https://cdn.corenexis.com/f/AcOsKbjd9NR.png"></span>
+      <div><strong>Faculty Portal</strong><small id="sbId">PEC-FAC-045</small></div>
+    </div>
+    <nav class="dash-nav">
+      <a href="#" class="is-active">&#128202; Overview</a>
+      <a href="#">&#127891; My Classes</a>
+      <a href="MARKATTENDENCE.HTML">&#9989; Mark Attendance</a>
+      <a href="#">&#128221; Upload Marks</a>
+      <a href="#">&#128101; My Advisees</a>
+      <a href="#">&#128276; Notices</a>
+    </nav>
+    <div class="dash__logout"><a href="faculty-login.html" id="logoutBtn" class="btn btn--outline btn--block">Log Out</a></div>
+  </aside>
+
+  <main class="dash__main">
+    <div class="dash__header">
+      <div>
+        <h1 id="welcomeMsg">Welcome, Prof. Meena</h1>
+        <p>Here's an overview of your classes and advisees this semester.</p>
+      </div>
+      <div class="dash__avatar" id="avatarInit">ME</div>
+    </div>
+
+    <div class="card-row">
+      <div class="metric-card"><div class="num">3</div><div class="label">Active Classes</div></div>
+      <div class="metric-card"><div class="num">175</div><div class="label">Total Students</div></div>
+      <div class="metric-card"><div class="num">10</div><div class="label">Advisees</div></div>
+      <div class="metric-card"><div class="num">2</div><div class="label">Pending Mark Entries</div></div>
+    </div>
+
+    <div class="panel">
+      <h3>My Classes</h3>
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Subject</th><th>Section</th><th>Strength</th><th>Avg. Attendance</th></tr></thead>
+        <tbody>
+          <tr><td>CS3591</td><td>Computer Networks</td><td>III CSE - A</td><td>62</td><td>84%</td></tr>
+          <tr><td>CS3551</td><td>Distributed Systems</td><td>III CSE - B</td><td>58</td><td>79%</td></tr>
+          <tr><td>CS3691</td><td>Embedded Systems</td><td>IV CSE - A</td><td>55</td><td>88%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>My Advisees — Academic Standing</h3>
+      <table class="data-table">
+        <thead><tr><th>Roll No.</th><th>Name</th><th>CGPA</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>21CS101</td><td>A. Karthik</td><td>8.9</td><td><span class="badge badge--good">Good Standing</span></td></tr>
+          <tr><td>21CS102</td><td>B. Divya</td><td>7.4</td><td><span class="badge badge--warn">Needs Attention</span></td></tr>
+          <tr><td>21CS103</td><td>C. Rahul</td><td>6.1</td><td><span class="badge badge--bad">At Risk</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script>
+  var name = sessionStorage.getItem('pecUserName') || 'Meena Suresh';
+  var id = sessionStorage.getItem('pecUserId') || 'PEC-FAC-045';
+  document.getElementById('welcomeMsg').textContent = 'Welcome, Prof. ' + name.split(' ')[0];
+  document.getElementById('avatarInit').textContent = name.substring(0,2).toUpperCase();
+  document.getElementById('sbId').textContent = id;
+  document.getElementById('logoutBtn').addEventListener('click', function(){ sessionStorage.clear(); });
+</script>
+</body>
+</html>
