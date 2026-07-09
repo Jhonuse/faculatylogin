@@ -149,9 +149,7 @@ p { margin: 0 0 1em; color: var(--slate); }
 .hero__seal { position: relative; display: flex; align-items: left; justify-content: center; }
 
 
-@keyframes sealSpin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
-.seal-medallion__core { animation: counterSpin 60s linear infinite; }
-@keyframes counterSpin { from { transform: rotate(0deg);} to { transform: rotate(-360deg);} }
+
 
 /* stat strip */
 .stat-strip { background: var(--navy-dark); border-top: 1px solid rgba(255,255,255,.08); position: relative; z-index: 1; transform:translateY(59%); }
